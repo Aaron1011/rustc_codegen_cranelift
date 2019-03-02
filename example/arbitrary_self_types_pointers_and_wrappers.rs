@@ -68,16 +68,20 @@ impl Trait for i32 {
     }
 }
 
+fn make_ptr_wrapper() -> Ptr<Wrapper<dyn Trait>> {
+    loop {}
+}
+
 #[start]
 fn main(_: isize, _: *const *const u8) -> isize {
-    let pw = Ptr(box Wrapper(5)) as Ptr<Wrapper<dyn Trait>>;
-    assert_eq!(pw.ptr_wrapper(), 5);
+    let pw = make_ptr_wrapper();
+    pw.ptr_wrapper();
 
-    let wp = Wrapper(Ptr(box 6)) as Wrapper<Ptr<dyn Trait>>;
-    assert_eq!(wp.wrapper_ptr(), 6);
+    //let wp = Wrapper(Ptr(box 6)) as Wrapper<Ptr<dyn Trait>>;
+    //assert_eq!(wp.wrapper_ptr(), 6);
 
-    let wpw = Wrapper(Ptr(box Wrapper(7))) as Wrapper<Ptr<Wrapper<dyn Trait>>>;
-    assert_eq!(wpw.wrapper_ptr_wrapper(), 7);
+    //let wpw = Wrapper(Ptr(box Wrapper(7))) as Wrapper<Ptr<Wrapper<dyn Trait>>>;
+    //assert_eq!(wpw.wrapper_ptr_wrapper(), 7);
 
     0
 }

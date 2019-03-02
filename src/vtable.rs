@@ -57,7 +57,7 @@ pub fn get_ptr_and_method_ref<'a, 'tcx: 'a>(
         arg
     };
 
-    let (ptr, vtable) = arg.load_value_pair(fx);
+    let (ptr, vtable) = arg.load_scalar_pair(fx);
     let usize_size = fx.layout_of(fx.tcx.types.usize).size.bytes();
     let func_ref = fx.bcx.ins().load(
         pointer_ty(fx.tcx),

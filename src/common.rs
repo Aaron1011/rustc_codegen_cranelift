@@ -170,6 +170,29 @@ impl<'tcx> CValue<'tcx> {
         }
     }
 
+    /// Load a value pair with layout.abi of scalar pair
+    pub fn load_scalar_pair<'a>(self, fx: &mut FunctionCx<'a, 'tcx, impl Backend>) -> (Value, Value)
+    where
+        'tcx: 'a,
+    {
+        match self {
+            CValue::ByRef(addr, layout) => {
+                assert_eq!(
+                    layout.size.bytes(),
+                    fx.tcx.data_layout.pointer_size.bytes() * 2
+                );
+                let scalar = match layout.abi {
+                    layout::Abi::Scalar(ref scalar) => scalar.clone(),
+                    _ => unreachable!(),
+                };
+                let clif_ty = crate::abi::scalar_to_clif_type(fx.tcx, scalar);
+                fx.bcx.ins().load(clif_ty, MemFlags::new(), addr, 0)
+            }
+            CValue::ByVal(_, _layout) => bug!("Please use load_scalar for ByVal"),
+            CValue::ByValPair(val1, val2, _layout) => (val1, val2),
+        }
+    }
+
     pub fn load_value_pair<'a>(self, fx: &mut FunctionCx<'a, 'tcx, impl Backend>) -> (Value, Value)
     where
         'tcx: 'a,
@@ -192,7 +215,7 @@ impl<'tcx> CValue<'tcx> {
                     .load(fx.pointer_type, MemFlags::new(), addr, val2_offset);
                 (val1, val2)
             }
-            CValue::ByVal(_, _layout) => bug!("Please use load_value for ByVal"),
+            CValue::ByVal(_, _layout) => bug!("Please use load_scalar for ByVal"),
             CValue::ByValPair(val1, val2, _layout) => (val1, val2),
         }
     }
